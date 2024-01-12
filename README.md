@@ -35,31 +35,29 @@ jmcginnis@chouffe:/media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training$ tree
 #### Generate Dataset
 
 ```
-python3 create_mcd.py --image_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/images/ --label_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/lesionmask/ --taskname ICHSegmentationSubmission --tasknumber 802 --split_dict train_dict.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
+python3 create_dataset.py --image_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/images/ --label_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/lesionmask/ --taskname ICHSegmentationSubmission --tasknumber 802 --split_dict train_dict.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
 ```
 
 #### Plan and preprocess
-
 ```
-nnUNetv2_plan_and_preprocess -d 801 --verify_dataset_integrity --verbose
+nnUNetv2_plan_and_preprocess -d 802 --verify_dataset_integrity --verbose
 ```
 
 #### Train 2D nn-UNet
-
 ```
-nnUNetv2_train 801 2d 0 --npz
-nnUNetv2_train 801 2d 1 --npz
-nnUNetv2_train 801 2d 2 --npz
-nnUNetv2_train 801 2d 3 --npz
-nnUNetv2_train 801 2d 4 --npz
+nnUNetv2_train 802 2d 0 --npz
+nnUNetv2_train 802 2d 1 --npz
+nnUNetv2_train 802 2d 2 --npz
+nnUNetv2_train 802 2d 3 --npz
+nnUNetv2_train 802 2d 4 --npz
 ```
 
 #### Train 3D nn-UNet
 ```
-nnUNetv2_train 801 3d_fullres 0 --npz
-nnUNetv2_train 801 3d_fullres 1 --npz
-nnUNetv2_train 801 3d_fullres 2 --npz
-nnUNetv2_train 801 3d_fullres 3 --npz
-nnUNetv2_train 801 3d_fullres 4 --npz
+nnUNetv2_train 802 3d_fullres 0 --npz
+nnUNetv2_train 802 3d_fullres 1 --npz
+nnUNetv2_train 802 3d_fullres 2 --npz
+nnUNetv2_train 802 3d_fullres 3 --npz
+nnUNetv2_train 802 3d_fullres 4 --npz
 ```
 
