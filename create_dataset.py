@@ -1,4 +1,5 @@
 import argparse
+from cProfile import label
 import pathlib
 from pathlib import Path
 import json
@@ -9,6 +10,7 @@ import sys
 import nibabel as nib
 import numpy as np
 from tqdm import tqdm
+import re
 
 # this script is employed to generate the nn-Unet based dataset format
 # as described in this readme:
@@ -53,7 +55,21 @@ def binarize_segmentation(ax_file_nnunet, seg_file_nnunet, threshold):
     ref = nib.load(ax_file_nnunet)
     return nib.Nifti1Image(data.astype(int), ref.affine, ref.header)
 
+# Function to extract ICH ID using regex
+def extract_ich_id(filename):
+    match = re.search(r"ICH\d+", filename)
+    return match.group() if match else None
+
 if __name__ == '__main__':
+
+    # Unfortunately, the incoming data structure is NOT BIDS
+    # It looks like this:
+    # ICH00001_20190703_ct.nii.gz  
+    # ICH00001_lesionmask.nii.gz   
+    # ICH00024_20200908_ct.nii.gz  
+    # ICH00024_lesionmask.nii.gz   
+    # ICH00046_20200616_ct.nii.gz
+    # ICH00046_lesionmask.nii.gz
 
     # parse command line arguments
     parser = argparse.ArgumentParser(description='Convert BIDS-structured database to nn-unet format.')
@@ -61,11 +77,11 @@ if __name__ == '__main__':
     parser.add_argument('--label_directory', help='Path to derivatives directory in  a BIDS structured database, used to provide flexibility.', required=True)
     parser.add_argument('--output_directory', help='Path to output directory.', required=True)
 
-    # e.g. provide as seg lesion ([label1 whitespace label2] without brackets)
-    parser.add_argument('--label_str', type=str, help="String included in label file of the NIFTI. Must be unique!", required=True)
+    parser.add_argument('--label_str', type=str, help="String included in label file of the NIFTI. Must be unique!", default='mask.nii.gz')
+    parser.add_argument('--image_str', type=str, help="String included in label file of the NIFTI. Must be unique!", default='ct.nii.gz')
 
-    parser.add_argument('--taskname', help='Specify the task name, e.g. Hippocampus', default='MSSpineLesion', type=str)
-    parser.add_argument('--tasknumber', help='Specify the task number, has to be greater than 500', default=501,type=int)
+    parser.add_argument('--taskname', help='Specify the task name, e.g. Hippocampus', default='ICH_Segmentation', type=str)
+    parser.add_argument('--tasknumber', help='Specify the task number, has to be greater than 500', default=801,type=int)
     parser.add_argument('--split_dict', help='Specify the splits using an a json file.', required=True)
 
     parser.add_argument('--binarize_labels', action='store_true', help="Binarize the label for nn-unet.")
@@ -95,14 +111,12 @@ if __name__ == '__main__':
     test_image_labels = []
     conversion_dict = {}
 
-    dirs = sorted(list(path_in_images.glob('*/')))
-    dirs = [str(x) for x in dirs]
+    images = sorted(list(path_in_images.rglob(f'*{args.image_str}*')))
+    masks = sorted(list(path_in_labels.rglob(f'*{args.label_str}*')))
 
-    # filter out derivatives directory for raw images
-    # ignore MAC .DS_Store files
-    dirs = [k for k in dirs if 'sub' in k]
-    dirs = [k for k in dirs if 'derivatives' not in k]
-    dirs = [k for k in dirs if '.DS' not in k]
+    assert len(images)==len(masks),'Mismatch between lesion and mask'
+
+    print(len(images))
 
     scan_cnt_train = 0
     scan_cnt_test = 0
@@ -113,108 +127,100 @@ if __name__ == '__main__':
     valid_train_imgs = []
     valid_test_imgs = []
     valid_train_imgs.append(splits["train"])
-    valid_train_imgs.append(splits["valid"])
     valid_test_imgs.append(splits["test"])
 
     # flatten the lists
     valid_train_imgs =[item for sublist in valid_train_imgs for item in sublist]
     valid_test_imgs =[item for sublist in valid_test_imgs for item in sublist]
 
-    for dir in tqdm(dirs):
-        # glob the session directories
-        subdirs = sorted(list(Path(dir).glob('*')))
-        for subdir in subdirs:
+    for i in range(len(images)):
+        seg_file = masks[i]
+        img_file = images[i]
 
-            n_chunks = len([f for f in subdir.rglob('*acq-ax*_T2w.nii.gz') if 'manual' not in f.name.lower()])
-            print(f"N Chunks {n_chunks}")
+        # check if IDS are the same
+        # Extracting ICH IDs from both files
+        ich_id1 = extract_ich_id(str(seg_file))
+        ich_id2 = extract_ich_id(str(img_file))
 
-            for i in range(n_chunks):
+        print("ICH ID Seg.", ich_id1)
+        print("ICH_ID Image", ich_id2)
 
-                ax_file = sorted([f for f in subdir.rglob('*acq-ax*_T2w.nii.gz') if 'manual' not in f.name.lower()])[i]
+        # Assertion to check if both ICH IDs are the same
+        assert ich_id1 == ich_id2, "ICH IDs do not match"
 
-                if args.use_sag_channel:
-                    sag_file = sorted(list(subdir.rglob('*acq-sag*_T2w.nii.gz')))[i]
-                    common = os.path.commonpath([ax_file, sag_file])
+        assert os.path.isfile(seg_file), 'No segmentation mask with this name!'
 
-                else:
-                    common = os.path.dirname(ax_file)
+        # only proceed if sub/session-id is included in the sets
+        if any(str(Path(img_file).name) in word for word in valid_train_imgs):
 
-                common = os.path.relpath(common, args.image_directory)
+            scan_cnt_train+= 1
+            # create the new convention names
+            img_file_nnunet = os.path.join(path_out_imagesTr,f'{args.taskname}_{scan_cnt_train:04d}_0000.nii.gz')
+            train_image.append(str(img_file_nnunet))
 
-                # find the corresponding segmentation file(s)
+            # create a system link (instead of copying)
+            os.symlink(os.path.abspath(img_file), img_file_nnunet)
+            conversion_dict[str(os.path.abspath(img_file))] = img_file_nnunet
 
-                seg_path = os.path.join(args.label_directory, common)
-                seg_file = sorted(list(Path(seg_path).rglob(f'*{args.label_str[0]}*.nii.gz')))[i]
-                assert os.path.isfile(seg_file), 'No segmentation mask with this name!'
+            seg_file_nnunet = os.path.join(path_out_labelsTr,f'{args.taskname}_{scan_cnt_train:04d}.nii.gz')
 
-                # only proceed if sub/session-id is included in the sets
-                if any(str(Path(ax_file).name) in word for word in valid_train_imgs) or any(str(Path(ax_file).name) in word for word in valid_test_imgs):
+            # segmentation files
 
-                    if any(str(Path(ax_file).name) in word for word in valid_train_imgs):
+            if args.binarize_labels:
+                # we copy the original label and binarize it
+                shutil.copyfile(seg_file, seg_file_nnunet)
+                # overwrite the label file
+                new_image = binarize_segmentation(img_file_nnunet, seg_file_nnunet, args.threshold)
+                nib.save(new_image, seg_file_nnunet)
 
-                        scan_cnt_train+= 1
-                        # create the new convention names
-                        ax_file_nnunet = os.path.join(path_out_imagesTr,f'{args.taskname}_{scan_cnt_train:04d}_0000.nii.gz')
-                        train_image.append(str(ax_file_nnunet))
-
-                        # create a system link (instead of copying)
-                        os.symlink(os.path.abspath(ax_file), ax_file_nnunet)
-                        conversion_dict[str(os.path.abspath(ax_file))] = ax_file_nnunet
-
-                        seg_file_nnunet = os.path.join(path_out_labelsTr,f'{args.taskname}_{scan_cnt_train:04d}.nii.gz')
-
-                        # segmentation files
-
-                        if args.binarize_labels:
-                            # we copy the original label and binarize it
-                            shutil.copyfile(seg_file, seg_file_nnunet)
-                            # overwrite the label file
-                            new_image = binarize_segmentation(ax_file_nnunet, seg_file_nnunet, args.threshold)
-                            nib.save(new_image, seg_file_nnunet)
-
-                        else:
-                            # we only create a symlink
-                            os.symlink(os.path.abspath(seg_file), seg_file_nnunet)
-
-                        conversion_dict[str(os.path.abspath(seg_file))] = seg_file_nnunet
-
-                        train_image_labels.append(str(seg_file_nnunet))
+            else:
+                # we only create a symlink
+                os.symlink(os.path.abspath(seg_file), seg_file_nnunet)
 
 
-                    else:
+            train_image_labels.append(str(seg_file_nnunet))
 
-                        scan_cnt_test+= 1
-                        # create the new convention names
-                        ax_file_nnunet = os.path.join(path_out_imagesTs,f'{args.taskname}_{scan_cnt_test:04d}_0000.nii.gz')
-                        test_image.append(str(ax_file_nnunet))
+        elif any(str(Path(img_file).name) in word for word in valid_test_imgs):
 
-                        # create a system link (instead of copying)
-                        os.symlink(os.path.abspath(ax_file), ax_file_nnunet)
-                        conversion_dict[str(os.path.abspath(ax_file))] = ax_file_nnunet
+            scan_cnt_test+= 1
+            # create the new convention names
+            img_file_nnunet = os.path.join(path_out_imagesTs,f'{args.taskname}_{scan_cnt_test:04d}_0000.nii.gz')
+            test_image.append(str(img_file_nnunet))
 
-                        # segmentation files
-                        seg_file_nnunet = os.path.join(path_out_labelsTs,f'{args.taskname}_{scan_cnt_test:04d}.nii.gz')
+            # create a system link (instead of copying)
+            os.symlink(os.path.abspath(img_file), img_file_nnunet)
+            conversion_dict[str(os.path.abspath(img_file))] = img_file_nnunet
 
-                        if args.binarize_labels:
-                            # we copy the original label and binarize it
-                            shutil.copyfile(seg_file, seg_file_nnunet)
-                            # overwrite the label file
-                            new_image = binarize_segmentation(ax_file_nnunet, seg_file_nnunet, args.threshold)
-                            nib.save(new_image, seg_file_nnunet)
+            seg_file_nnunet = os.path.join(path_out_labelsTs,f'{args.taskname}_{scan_cnt_test:04d}.nii.gz')
 
-                        else:
-                            # we only create a symlink
-                            os.symlink(os.path.abspath(seg_file), seg_file_nnunet)
+            # segmentation files
 
-                        conversion_dict[str(os.path.abspath(seg_file))] = seg_file_nnunet
+            if args.binarize_labels:
+                # we copy the original label and binarize it
+                shutil.copyfile(seg_file, seg_file_nnunet)
+                # overwrite the label file
+                new_image = binarize_segmentation(img_file_nnunet, seg_file_nnunet, args.threshold)
+                nib.save(new_image, seg_file_nnunet)
 
-                        test_image_labels.append(str(seg_file_nnunet))
+            else:
+                # we only create a symlink
+                os.symlink(os.path.abspath(seg_file), seg_file_nnunet)
 
-                else:
-                    print("Skipping file, could not be located in the specified split.", ax_file)
+
+            test_image_labels.append(str(seg_file_nnunet))
+
+        else:
+            print("Skipping file, could not be located in the specified split.", img_file)
+
+
+    print(scan_cnt_test)
+    print(scan_cnt_train)
+
+    print(len(valid_train_imgs))
+    print(valid_test_imgs)
 
     assert scan_cnt_train == len(valid_train_imgs), 'No. of train/val images does not correspond to ivadomed dict.'
-    assert scan_cnt_test == len(valid_test_imgs) | len, 'No. of test images does not correspond to ivadomed dict.'
+    assert scan_cnt_test == len(valid_test_imgs) or valid_test_imgs[0] == 'None', 'No. of test images does not correspond to ivadomed dict.'
 
     # create conversion dictionary so we can retrieve the original file names
     json_object = json.dumps(conversion_dict, indent=4)
@@ -243,7 +249,7 @@ if __name__ == '__main__':
 
     json_dict['labels'] = {
             "background": 0,
-            f"{args.label_str}": 1,
+            "ich": 1,
         }
 
     json_dict['numTraining'] = scan_cnt_train
