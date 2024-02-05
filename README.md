@@ -61,3 +61,12 @@ nnUNetv2_train 802 3d_fullres 3 --npz
 nnUNetv2_train 802 3d_fullres 4 --npz
 ```
 
+#### To run inference
+
+Do not forget to maintain the same naming convention (e.g. `_0000.nii.gz` for your inference images) as in your training set!
+Run inference:
+```
+nnUNetv2_predict -d 802 -i /path/to/img -o /path/to/output -c 3d_fullres --verbose 
+```
+
+
