@@ -1,46 +1,53 @@
-import argparse
-import os
-import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
+import nibabel as nib
+from matplotlib.colors import ListedColormap
+import argparse
 
-def create_axial_snapshots(image_path, lesion_mask_path, threshold):
-    # Load the NIfTI image using nibabel
-    img = nib.load(image_path)
-    data = img.get_fdata()
+def overlay_slices(image_path, mask_path):
+    # Load the NIfTI image and mask
+    image = nib.load(image_path)
+    image_data = image.get_fdata()
+    mask = nib.load(mask_path)
+    mask_data = mask.get_fdata()
 
-    # Load the lesion mask image using nibabel
-    lesion_mask_img = nib.load(lesion_mask_path)
-    lesion_mask_data = lesion_mask_img.get_fdata()
 
-    # Iterate over all axial slices
-    # Iterate over all axial slices
-    for i in range(data.shape[2]):
-        # Create the axial snapshot
-        axial_slice = data[:, :, i]
-        mask_slice = lesion_mask_data[:,:,i]
+    # Create a custom colormap
+    red_color = [0.5, 0, 0, 1.0]  # [R, G, B, Alpha]
+    colors = [red_color, red_color]
+    cmap = ListedColormap(colors)
 
-        cmap = plt.cm.gray
-        norm = plt.Normalize(axial_slice.min(), axial_slice.max())
+    # Loop through all slices and save each as a PNG file
+    for slice_index in range(image_data.shape[2]):
+        # Get the current slice from the image and mask
+        image_slice = image_data[:, :, slice_index]
+        mask_slice = mask_data[:, :, slice_index]
 
-        rgba = cmap(norm(axial_slice))
+        # Create a masked array to set transparency for mask value 0
+        masked_data = np.ma.masked_equal(mask_slice, 0)
 
-        rgba[mask_slice==1] = 1, 0 , 0
+        # Plot the image and overlay the masked data
+        plt.imshow(np.rot90(image_slice), cmap='gray')
+        plt.imshow(np.rot90(masked_data), cmap=cmap, alpha=0.75)#, interpolation='linear')
 
-        # Plot the axial slice
-        plt.imshow(np.rot90(rgba), interpolation='nearest')
+        # Remove the colorbar
+        plt.colorbar().remove()
         plt.axis('off')
 
-        # Save the image as PNG with sequential filenames
-        png_filename = os.path.splitext(image_path)[0] + f"_{str(i).zfill(4)}.png"
-        plt.savefig(png_filename, bbox_inches='tight', pad_inches=0)
-        plt.close()
-        print(f"Axial snapshot {i} saved as {png_filename}")
+        # Save the current slice as a PNG file
+        plt.savefig(f'slice_{slice_index}.png', bbox_inches='tight', pad_inches=0)
+        plt.clf()  # Clear the figure for the next iteration
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Create axial snapshots of a NIfTI image.")
-    parser.add_argument("--image", required=True, help="Path to the NIfTI image")
-    parser.add_argument("--mask", required=True, help="Path to the lesion mask image")
+    print('Slices saved as PNG files.')
+
+if __name__ == '__main__':
+    # Create an argument parser
+    parser = argparse.ArgumentParser(description='Overlay voxel data on NIfTI images.')
+    parser.add_argument('--image', type=str, help='Path to the NIfTI image file.')
+    parser.add_argument('--mask', type=str, help='Path to the NIfTI mask file.')
+
+    # Parse the arguments
     args = parser.parse_args()
 
-    create_axial_snapshots(args.image, args.mask, args.threshold)
+    # Overlay slices with the provided image and mask paths
+    overlay_slices(args.image, args.mask)
