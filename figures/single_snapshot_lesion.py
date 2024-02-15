@@ -8,6 +8,10 @@ def overlay_slices(image_path, mask_path):
     # Load the NIfTI image and mask
     image = nib.load(image_path)
     image_data = image.get_fdata()
+
+    image_data[image_data >200] = 200
+    image_data[image_data < 0] = 0
+    
     mask = nib.load(mask_path)
     mask_data = mask.get_fdata()
 
