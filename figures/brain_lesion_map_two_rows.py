@@ -66,7 +66,7 @@ for idx, slice_number in enumerate(args.slices):
 #fig.text(0.5, 0.5 - (0.5 / len(args.slices)), "VLSM2", fontsize=20, ha='center', va='top')
 
 # Adjust the colorbar to reflect the heatmaps
-cbar_ax = fig.add_axes([0.92, 0.15, 0.01, 0.7])
+cbar_ax = fig.add_axes([0.92, 0.155, 0.01, 0.685])
 cbar = fig.colorbar(img2, cax=cbar_ax, orientation='vertical', pad=0.01)  # Using img2 for the colorbar
 cbar.locator = ticker.MaxNLocator(integer=True)
 cbar.update_ticks()
