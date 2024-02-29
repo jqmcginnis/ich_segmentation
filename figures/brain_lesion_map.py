@@ -66,7 +66,7 @@ for idx, slice_number in enumerate(slices_to_plot):
     axes[idx].axis("off")
 
 # Increase 'left' to move it more to the right, decrease 'width' to make it thinner, and adjust 'height' as needed
-cbar_ax = fig.add_axes([0.92, 0.25, 0.01, 0.35])  
+cbar_ax = fig.add_axes([0.92, 0.25, 0.01, 0.32])  
 
 # Create the colorbar with a specified aspect to control its width (narrowness)
 # Decreasing the 'aspect' value makes it wider, increasing makes it narrower 
