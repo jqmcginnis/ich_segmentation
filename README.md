@@ -68,5 +68,22 @@ Run inference:
 ```
 nnUNetv2_predict -d 802 -i /path/to/img -o /path/to/output -c 3d_fullres --verbose 
 ```
+### Citation
+
+Please cite nn-UNet if you decide to train similar networks as we do.
+
+@article{isensee2021nnu,
+  title={nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation},
+  author={Isensee, Fabian and Jaeger, Paul F and Kohl, Simon AA and Petersen, Jens and Maier-Hein, Klaus H},
+  journal={Nature methods},
+  volume={18},
+  number={2},
+  pages={203--211},
+  year={2021},
+  publisher={Nature Publishing Group}
+}
+
+If you find our code helpful in setting up the nnUNet dataset format, or you use our plotting code, please consider citing us as well.
+
 
 
