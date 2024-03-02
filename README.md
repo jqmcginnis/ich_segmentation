@@ -38,6 +38,11 @@ jmcginnis@chouffe:/media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training$ tree
 python3 create_dataset.py --image_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/images/ --label_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/lesionmask/ --taskname ICHSegmentationSubmission --tasknumber 802 --split_dict train_dict.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
 ```
 
+Generate a different classifier:
+```
+python3 create_dataset.py --image_directory /home/jmcginnis/raid_access2/Julian/nnUNet_training1/scans --label_directory /home/jmcginnis/raid_access2/Julian/nnUNet_training1/lesionsmasks --taskname ICH_PrelabelingIVH --tasknumber 803 --split_dict train_dict_ivh_prelabeling.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
+```
+
 #### Plan and preprocess
 ```
 nnUNetv2_plan_and_preprocess -d 802 --verify_dataset_integrity --verbose
