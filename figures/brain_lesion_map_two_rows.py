@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description='Plot lesion frequency maps.')
 parser.add_argument('--template_path', default='sub-mni152_space-mni_t1.nii.gz', help='Path to the template file')
 parser.add_argument('--lesion_folder1', required=True, help='Path to the first lesion segmentations folder')
 parser.add_argument('--lesion_folder2', required=True, help='Path to the second lesion segmentations folder')
-parser.add_argument('--pattern', default='_seg.nii.gz', help='Pattern to match the lesion files')
+parser.add_argument('--pattern', default='processed.nii.gz', help='Pattern to match the lesion files')
 parser.add_argument('--slices', type=int, nargs='+', default=[132,113,93,84,73,44], help='Slice numbers to plot')
 
 args = parser.parse_args()
@@ -65,10 +65,17 @@ for idx, slice_number in enumerate(args.slices):
 #fig.text(0.5, 0.5 + (0.5 / len(args.slices)), "VLSM1", fontsize=20, ha='center', va='bottom')
 #fig.text(0.5, 0.5 - (0.5 / len(args.slices)), "VLSM2", fontsize=20, ha='center', va='top')
 
+# Adding label A and B to the left of the first column
+fig.text(0.1, 0.72, "A", fontsize=24, ha='center', va='center')#, weight='bold')
+fig.text(0.1, 0.28, "B", fontsize=24, ha='center', va='center')#, weight='bold')
+
 # Adjust the colorbar to reflect the heatmaps
 cbar_ax = fig.add_axes([0.92, 0.155, 0.01, 0.685])
 cbar = fig.colorbar(img2, cax=cbar_ax, orientation='vertical', pad=0.01)  # Using img2 for the colorbar
 cbar.locator = ticker.MaxNLocator(integer=True)
 cbar.update_ticks()
+
+# Add a title to the color bar
+cbar.set_label('N', rotation=90, labelpad=20, fontsize=12)
 
 plt.show()
