@@ -34,11 +34,11 @@ jmcginnis@chouffe:/media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training$ tree
 
 #### Generate Dataset
 
+Training the ICH segmentation network:
 ```
 python3 create_dataset.py --image_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/images/ --label_directory /media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training/ICH_nnUNet_training_100/CT/training/lesionmask/ --taskname ICHSegmentationSubmission --tasknumber 802 --split_dict train_dict.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
 ```
-
-Generate a different classifier:
+Training an IVH segmentation network:
 ```
 python3 create_dataset.py --image_directory /home/jmcginnis/raid_access2/Julian/nnUNet_training1/scans --label_directory /home/jmcginnis/raid_access2/Julian/nnUNet_training1/lesionsmasks --taskname ICH_PrelabelingIVH --tasknumber 803 --split_dict train_dict_ivh_prelabeling.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
 ```
@@ -69,6 +69,8 @@ nnUNetv2_train 802 3d_fullres 4 --npz
 #### To run inference
 
 Do not forget to maintain the same naming convention (e.g. `_0000.nii.gz` for your inference images) as in your training set!
+You may do this with the linux `rename 's/ct.nii.gz/_0000.nii.gz' *` tool.
+
 Run inference:
 ```
 nnUNetv2_predict -d 802 -i /path/to/img -o /path/to/output -c 3d_fullres --verbose 
@@ -76,7 +78,7 @@ nnUNetv2_predict -d 802 -i /path/to/img -o /path/to/output -c 3d_fullres --verbo
 ### Citation
 
 Please cite nn-UNet if you decide to train similar networks as we do.
-
+```
 @article{isensee2021nnu,
   title={nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation},
   author={Isensee, Fabian and Jaeger, Paul F and Kohl, Simon AA and Petersen, Jens and Maier-Hein, Klaus H},
@@ -87,6 +89,7 @@ Please cite nn-UNet if you decide to train similar networks as we do.
   year={2021},
   publisher={Nature Publishing Group}
 }
+```
 
 If you find our code helpful in setting up the nnUNet dataset format, or you use our plotting code, please consider citing us as well.
 
