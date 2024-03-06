@@ -42,7 +42,7 @@ global_max = max(sum_lesions1.max(), sum_lesions2.max())
 global_min = min(sum_lesions1.min(), sum_lesions2.min())
 
 # Create a figure for plotting slices in a 2x6 grid
-fig, axes = plt.subplots(2, len(args.slices), figsize=(25, 10))
+fig, axes = plt.subplots(2, len(args.slices), figsize=(6.69, 2.5))
 
 # Plotting for both lesion sets and adding titles
 for idx, slice_number in enumerate(args.slices):
@@ -58,24 +58,19 @@ for idx, slice_number in enumerate(args.slices):
     img2.set_clim(vmin=global_min, vmax=global_max)
     axes[1, idx].axis("off")
 
-# Adding titles for each row
-#axes[0, 0].set_title("VLSM1", fontsize=20, pad=20, loc='center')
-#axes[1, 0].set_title("VLSM2", fontsize=20, pad=20, loc='center')
-
-#fig.text(0.5, 0.5 + (0.5 / len(args.slices)), "VLSM1", fontsize=20, ha='center', va='bottom')
-#fig.text(0.5, 0.5 - (0.5 / len(args.slices)), "VLSM2", fontsize=20, ha='center', va='top')
-
 # Adding label A and B to the left of the first column
-fig.text(0.1, 0.72, "A", fontsize=24, ha='center', va='center')#, weight='bold')
-fig.text(0.1, 0.28, "B", fontsize=24, ha='center', va='center')#, weight='bold')
+fig.text(0.1, 0.70, "A", fontsize=9, ha='center', va='center')#, weight='bold')
+fig.text(0.1, 0.28, "B", fontsize=9, ha='center', va='center')#, weight='bold')
 
 # Adjust the colorbar to reflect the heatmaps
-cbar_ax = fig.add_axes([0.92, 0.155, 0.01, 0.685])
+cbar_ax = fig.add_axes([0.92, 0.1125, 0.0075, 0.765])
 cbar = fig.colorbar(img2, cax=cbar_ax, orientation='vertical', pad=0.01)  # Using img2 for the colorbar
 cbar.locator = ticker.MaxNLocator(integer=True)
+cbar.ax.tick_params(labelsize=6)
 cbar.update_ticks()
 
 # Add a title to the color bar
-cbar.set_label('N', rotation=90, labelpad=20, fontsize=12)
+cbar.set_label('N', rotation=90, labelpad=7, fontsize=9)
 
-plt.show()
+# plt.tight_layout()
+plt.savefig("Fig2.tiff", dpi=300)
