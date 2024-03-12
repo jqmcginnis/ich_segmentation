@@ -43,6 +43,12 @@ Training an IVH segmentation network:
 python3 create_dataset.py --image_directory /home/jmcginnis/raid_access2/Julian/nnUNet_training1/scans --label_directory /home/jmcginnis/raid_access2/Julian/nnUNet_training1/lesionsmasks --taskname ICH_PrelabelingIVH --tasknumber 803 --split_dict train_dict_ivh_prelabeling.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
 ```
 
+Training a revised ICH segmentation network:
+
+```
+python3 create_dataset.py --image_directory /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/PH/trainingset/scans --label_directory /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/PH/trainingset/lesionmasks --taskname ICH_Segmentation_PH --tasknumber 804 --split_dict 804_train_dict_ich_ph.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
+```
+
 #### Plan and preprocess
 ```
 nnUNetv2_plan_and_preprocess -d 802 --verify_dataset_integrity --verbose
@@ -50,20 +56,20 @@ nnUNetv2_plan_and_preprocess -d 802 --verify_dataset_integrity --verbose
 
 #### Train 2D nn-UNet
 ```
-nnUNetv2_train 802 2d 0 --npz
-nnUNetv2_train 802 2d 1 --npz
-nnUNetv2_train 802 2d 2 --npz
-nnUNetv2_train 802 2d 3 --npz
-nnUNetv2_train 802 2d 4 --npz
+nnUNetv2_train 804 2d 0 --npz
+nnUNetv2_train 804 2d 1 --npz
+nnUNetv2_train 804 2d 2 --npz
+nnUNetv2_train 804 2d 3 --npz
+nnUNetv2_train 804 2d 4 --npz
 ```
 
 #### Train 3D nn-UNet
 ```
-nnUNetv2_train 802 3d_fullres 0 --npz
-nnUNetv2_train 802 3d_fullres 1 --npz
-nnUNetv2_train 802 3d_fullres 2 --npz
-nnUNetv2_train 802 3d_fullres 3 --npz
-nnUNetv2_train 802 3d_fullres 4 --npz
+nnUNetv2_train 804 3d_fullres 0 --npz
+nnUNetv2_train 804 3d_fullres 1 --npz
+nnUNetv2_train 804 3d_fullres 2 --npz
+nnUNetv2_train 804 3d_fullres 3 --npz
+nnUNetv2_train 804 3d_fullres 4 --npz
 ```
 
 #### To run inference

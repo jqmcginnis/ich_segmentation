@@ -77,8 +77,8 @@ if __name__ == '__main__':
     parser.add_argument('--label_directory', help='Path to derivatives directory in  a BIDS structured database, used to provide flexibility.', required=True)
     parser.add_argument('--output_directory', help='Path to output directory.', required=True)
 
-    parser.add_argument('--label_str', type=str, help="String included in label file of the NIFTI. Must be unique!", default='mask.nii.gz')
-    parser.add_argument('--image_str', type=str, help="String included in label file of the NIFTI. Must be unique!", default='ct.nii.gz')
+    parser.add_argument('--label_str', type=str, help="String included in label file of the NIFTI. Must be unique!", default='.nii.gz')
+    parser.add_argument('--image_str', type=str, help="String included in label file of the NIFTI. Must be unique!", default='.nii.gz')
 
     parser.add_argument('--taskname', help='Specify the task name, e.g. Hippocampus', default='ICH_Segmentation', type=str)
     parser.add_argument('--tasknumber', help='Specify the task number, has to be greater than 500', default=801,type=int)
