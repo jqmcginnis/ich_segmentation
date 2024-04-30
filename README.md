@@ -54,6 +54,12 @@ Training the final IVH segmentation network:
 python3 create_dataset.py --image_directory /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/IVH/nnUNet_training_100/scans/final_training/nnUNet/training --label_directory  /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/IVH/nnUNet_training_100/lesionmasks/final_training/nnUNet/training  --taskname ICH_Segmentation_IVH_final --tasknumber 805 --split_dict 805_train_dict_ich_ivh_final.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
 ```
 
+Training a prelebaling network for edema segmentation:
+```
+python3 create_dataset.py --image_directory /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/edema/nnUNet_training_presegmentation/scans --label_directory  /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/edema/nnUNet_training_presegmentation/lesionmasks  --taskname ICH_Segmentation_IVH_final --tasknumber 806 --split_dict 806_train_dict_edema_prelabeling.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
+```
+
+
 
 #### Plan and preprocess
 ```
