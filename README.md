@@ -32,6 +32,15 @@ jmcginnis@chouffe:/media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training$ tree
 ...
 ```
 
+#### Convert to RPI first
+
+Run:
+
+```
+find . -type f -name "*.nii.gz" -exec sct_image -i {} -setorient RPI \;
+```
+
+
 #### Generate Dataset
 
 Training the ICH segmentation network:
