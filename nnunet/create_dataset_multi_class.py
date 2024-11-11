@@ -9,6 +9,7 @@ import sys
 import nibabel as nib
 import numpy as np
 import re
+from tqdm import tqdm
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via input() and return their answer."""
@@ -32,7 +33,7 @@ def binarize_mask(mask_file, threshold):
     binarized_data = np.where(data > threshold, 1, 0)
     return nib.Nifti1Image(binarized_data.astype(np.int16), img.affine, img.header)
 
-def combine_masks(seg_sv, seg_v3, seg_v4):
+def combine_masks(img, seg_sv, seg_v3, seg_v4):
     """Combines masks based on priority rules and handles overlaps, using V4 label for SV and V4 overlap."""
     combined = np.zeros_like(seg_sv.get_fdata(), dtype=np.int16)
     
@@ -54,9 +55,9 @@ def combine_masks(seg_sv, seg_v3, seg_v4):
         combined[(sv_data > 0) & (v4_data > 0)] = 3
         print("Overlap between seg-SV and seg-V4 found, which should not happen. Using V4 label for these overlaps.")
     
-    return nib.Nifti1Image(combined, seg_sv.affine, seg_sv.header)
+    return nib.Nifti1Image(combined, img.affine, img.header)
 
-def process_labels(label_paths, threshold, output_path, taskname, scan_num):
+def process_labels(img_path, label_paths, threshold, output_path, taskname, scan_num):
     """Processes each set of masks (SV, V3, V4) to binarize and combine."""
     sv_file = label_paths['SV']
     v3_file = label_paths['V3']
@@ -68,7 +69,7 @@ def process_labels(label_paths, threshold, output_path, taskname, scan_num):
     v4_binarized = binarize_mask(v4_file, threshold)
     
     # Combine masks
-    combined_mask = combine_masks(sv_binarized, v3_binarized, v4_binarized)
+    combined_mask = combine_masks(nib.load(img_path), sv_binarized, v3_binarized, v4_binarized)
     
     # Save combined mask
     output_file = os.path.join(output_path, f'{taskname}_{scan_num:04d}.nii.gz')
@@ -85,7 +86,7 @@ if __name__ == '__main__':
     parser.add_argument('--image_directory', help='Path to image directory.', required=True)
     parser.add_argument('--label_directory', help='Path to label directory.', required=True)
     parser.add_argument('--output_directory', help='Path to output directory.', required=True)
-    parser.add_argument('--taskname', help='Specify the task name, e.g. Hippocampus', default='IVH_Detailed', type=str)
+    parser.add_argument('--taskname', help='Specify the task name, e.g. Hippocampus', default='IVH_Multi_Class', type=str)
     parser.add_argument('--tasknumber', help='Specify the task number, has to be greater than 500', default=807, type=int)
     parser.add_argument('--split_dict', help='Specify the splits using a json file.', required=True)
     parser.add_argument('--binarize_labels', action='store_true', help="Binarize the label for nn-unet.")
@@ -121,9 +122,7 @@ if __name__ == '__main__':
 
     scan_cnt_train, scan_cnt_test = 0, 0
 
-    print(valid_train_imgs)
-
-    for img_file in images:
+    for img_file in tqdm(images):
         ich_id = extract_ich_id(str(img_file))
 
         # Identify corresponding label files by label type
@@ -137,26 +136,23 @@ if __name__ == '__main__':
             print(f"Skipping {ich_id} due to missing label files.")
             continue
 
-        print(ich_id)
-
         if f'{ich_id}_ct_0000.nii.gz' in valid_train_imgs:
-            print("valid")
             scan_cnt_train += 1
             img_file_nnunet = os.path.join(path_out_imagesTr, f'{args.taskname}_{scan_cnt_train:04d}_0000.nii.gz')
             shutil.copyfile(os.path.abspath(img_file), img_file_nnunet)
             conversion_dict[str(os.path.abspath(img_file))] = img_file_nnunet
             
-            seg_file_nnunet = process_labels(label_paths, args.threshold, path_out_labelsTr, args.taskname, scan_cnt_train)
+            seg_file_nnunet = process_labels(img_file, label_paths, args.threshold, path_out_labelsTr, args.taskname, scan_cnt_train)
             train_image.append(str(img_file_nnunet))
             train_image_labels.append(str(seg_file_nnunet))
 
-        elif ich_id in valid_test_imgs:
+        elif f'{ich_id}_ct_0000.nii.gz' in valid_test_imgs:
             scan_cnt_test += 1
             img_file_nnunet = os.path.join(path_out_imagesTs, f'{args.taskname}_{scan_cnt_test:04d}_0000.nii.gz')
             shutil.copyfile(os.path.abspath(img_file), img_file_nnunet)
             conversion_dict[str(os.path.abspath(img_file))] = img_file_nnunet
             
-            seg_file_nnunet = process_labels(label_paths, args.threshold, path_out_labelsTs, args.taskname, scan_cnt_test)
+            seg_file_nnunet = process_labels(img_file, label_paths, args.threshold, path_out_labelsTs, args.taskname, scan_cnt_test)
             test_image.append(str(img_file_nnunet))
             test_image_labels.append(str(seg_file_nnunet))
 

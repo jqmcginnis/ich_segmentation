@@ -37,7 +37,7 @@ jmcginnis@chouffe:/media/raid3/FelixH/ICH_Scans/ICH_nnunet/final_training$ tree
 Run:
 
 ```
-find . -type f -name "*.nii.gz" -exec sct_image -i {} -setorient RPI \;
+find . -type f -name "*.nii.gz" | xargs -P 64 -I {} sct_image -i {} -setorient RPI
 ```
 
 
@@ -68,6 +68,10 @@ Training a prelebaling network for edema segmentation:
 python3 create_dataset.py --image_directory /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/edema/nnUNet_training_presegmentation/scans --label_directory  /home/jmcginnis/raid_access2/FelixH/ICH/ICH_lesionsegmentation/CT/edema/nnUNet_training_presegmentation/lesionmasks  --taskname ICH_Segmentation_IVH_final --tasknumber 806 --split_dict 806_train_dict_edema_prelabeling.json --output_directory /home/jmcginnis/git_repositories/nnUNetV2_database/nnUNet_raw/
 ```
 
+Training a three-class model for IVH:
+```
+python3 create_dataset_multi_class.py --image_directory /home/jmcginnis/raid_access2/Julian/IVH_detailed/final_model/scans/training --label_directory /home/jmcginnis/raid_access2/Julian/IVH_detailed/final_model/lesionmasks/training --output_directory /home/jmcginnis/raid_access2/Julian/nnUNetV2_database/nnUNet_raw --split_dict 807_split.json 
+```
 
 
 #### Plan and preprocess
