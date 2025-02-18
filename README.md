@@ -1,7 +1,7 @@
 ## Predictors and Implications of Myocardial Injury in Intracerebral Hemorrhage}
 This github repository hosts source code for training an nn-UNet based model for ICH segmentation.
 
-![overview](overview.png)
+![overview](overview.jpeg)
 
 
 
