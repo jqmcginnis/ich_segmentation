@@ -124,5 +124,17 @@ Please cite nn-UNet if you decide to train similar networks as we do.
 
 If you find our code helpful in setting up the nnUNet dataset format, or you use our plotting code, please consider citing us as well.
 
+```
+@article{hess2025predictors,
+  title={Predictors and Implications of Myocardial Injury in Intracerebral Hemorrhage},
+  author={Hess, Felix and McGinnis, Julian and Baki, Enayatullah and Wiltgen, Tun and M{\"u}ller, Arne and Maegerlein, Christian and Kirschke, Jan and Zimmer, Claus and Hemmer, Bernhard and Wunderlich, Silke and others},
+  journal={Clinical Neuroradiology},
+  pages={1--10},
+  year={2025},
+  publisher={Springer}
+}
+```
+
+
 
 
