@@ -130,13 +130,13 @@ def get_test_metrics(pred_folder, gt_folder, num_predictions):
         pred_file = pred[idx]
         pred_npy = nib.load(pred_file).get_fdata()
         # make sure the predictions are binary because ANIMA accepts binarized inputs only
-        pred_npy = np.array(pred_npy > 0.5, dtype=float)
+        #pred_npy = np.array(pred_npy > 0.5, dtype=float)
 
         #gt_file = os.path.join(gt_folder, f"{args.task_name}_{(idx+1):03d}.nii.gz")
         gt_file = gt[idx]
         gt_npy = nib.load(gt_file).get_fdata()
         # make sure the GT is binary because ANIMA accepts binarized inputs only
-        gt_npy = np.array(gt_npy > 0.5, dtype=float)
+        # gt_npy = np.array(gt_npy > 0.5, dtype=float)
         # print(((gt_npy==0.0) | (gt_npy==1.0)).all())
 
         # Save the binarized predictions and GTs

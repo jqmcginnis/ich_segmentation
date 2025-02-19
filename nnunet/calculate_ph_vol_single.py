@@ -21,12 +21,12 @@ def calculate_lesion_volume(mask_path):
         lesion_volume = lesion_voxels * voxel_size  # in mm³
         
         # Prepare the output CSV file name
-        csv_file = str(mask_path).replace(".nii.gz", ".csv")
+        csv_file = str(mask_path).replace(".nii.gz", "_volume.csv")
         
         # Save results to CSV
         with open(csv_file, mode="w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["filename", "ph_voxels", "ph_volume (mm³)"])
+            writer.writerow(["filename", "ph_voxels", "ph_volume_mm3"])
             writer.writerow([os.path.basename(mask_path), lesion_voxels, lesion_volume])
         
         print(f"Results saved to {csv_file}")

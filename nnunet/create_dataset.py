@@ -114,6 +114,9 @@ if __name__ == '__main__':
     images = sorted(list(path_in_images.rglob(f'*{args.image_str}*')))
     masks = sorted(list(path_in_labels.rglob(f'*{args.label_str}*')))
 
+    print(len(images))
+    print(len(masks))
+
     assert len(images)==len(masks),'Mismatch between lesion and mask'
 
     print(len(images))
@@ -159,7 +162,7 @@ if __name__ == '__main__':
             train_image.append(str(img_file_nnunet))
 
             # create a system link (instead of copying)
-            os.symlink(os.path.abspath(img_file), img_file_nnunet)
+            shutil.copy(os.path.abspath(img_file), img_file_nnunet)
             conversion_dict[str(os.path.abspath(img_file))] = img_file_nnunet
 
             seg_file_nnunet = os.path.join(path_out_labelsTr,f'{args.taskname}_{scan_cnt_train:04d}.nii.gz')
@@ -175,7 +178,7 @@ if __name__ == '__main__':
 
             else:
                 # we only create a symlink
-                os.symlink(os.path.abspath(seg_file), seg_file_nnunet)
+                shutil.copy(os.path.abspath(seg_file), seg_file_nnunet)
 
 
             train_image_labels.append(str(seg_file_nnunet))
@@ -188,7 +191,7 @@ if __name__ == '__main__':
             test_image.append(str(img_file_nnunet))
 
             # create a system link (instead of copying)
-            os.symlink(os.path.abspath(img_file), img_file_nnunet)
+            shutil.copy(os.path.abspath(img_file), img_file_nnunet)
             conversion_dict[str(os.path.abspath(img_file))] = img_file_nnunet
 
             seg_file_nnunet = os.path.join(path_out_labelsTs,f'{args.taskname}_{scan_cnt_test:04d}.nii.gz')
@@ -204,7 +207,7 @@ if __name__ == '__main__':
 
             else:
                 # we only create a symlink
-                os.symlink(os.path.abspath(seg_file), seg_file_nnunet)
+                shutil.copy(os.path.abspath(seg_file), seg_file_nnunet)
 
 
             test_image_labels.append(str(seg_file_nnunet))

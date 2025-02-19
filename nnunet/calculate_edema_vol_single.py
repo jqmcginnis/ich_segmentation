@@ -26,7 +26,7 @@ def calculate_lesion_volume(mask_path):
         # Save results to CSV
         with open(csv_file, mode="w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["filename", "edema_voxels", "edema_volume (mm³)"])
+            writer.writerow(["filename", "edema_voxels", "edema_volume_mm3"])
             writer.writerow([os.path.basename(mask_path), lesion_voxels, lesion_volume])
         
         print(f"Results saved to {csv_file}")
